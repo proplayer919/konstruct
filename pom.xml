@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.proplayer919</groupId>
+    <artifactId>MinestomTest</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+
+        <repository>
+            <id>Serble</id>
+            <url>https://maven.serble.net/snapshots/</url>
+        </repository>
+
+        <repository>
+            <id>repo.hypera.dev</id>
+            <url>https://repo.hypera.dev/snapshots/</url>
+        </repository>
+
+        <repository>
+            <id>tesseract-releases</id>
+            <url>https://repo.tesseract.club/releases</url>
+        </repository>
+
+        <repository>
+            <id>asorda-public</id>
+            <name>Asorda Repository</name>
+            <url>https://mvn.everbuild.org/public</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>2.0.16</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.TogAr2</groupId>
+            <artifactId>MinestomPvP</artifactId>
+            <version>56a831b41c</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.TogAr2</groupId>
+            <artifactId>MinestomFluids</artifactId>
+            <version>af2a7c9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.mangolise</groupId>
+            <artifactId>mango-anti-cheat</artifactId>
+            <version>latest</version>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.lu15</groupId>
+            <artifactId>simple-voice-chat-minestom</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bridgesplash</groupId>
+            <artifactId>sidebar-api</artifactId>
+            <version>0.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.everbuild.blocksandstuff</groupId>
+            <artifactId>blocksandstuff-blocks</artifactId>
+            <version>1.9.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.minestom</groupId>
+            <artifactId>minestom</artifactId>
+            <version>2025.10.31-1.21.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.42.0.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal> <!--Prevent dependencies from shading multiple times-->
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>dev.proplayer919.minestomtest.Main</mainClass> <!--Change this to your main class-->
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
