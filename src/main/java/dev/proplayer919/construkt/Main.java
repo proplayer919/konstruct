@@ -1,18 +1,19 @@
-package dev.proplayer919.minestomtest;
+package dev.proplayer919.construkt;
 
-import dev.proplayer919.minestomtest.commands.GameModeCommand;
-import dev.proplayer919.minestomtest.commands.PermissionCommand;
-import dev.proplayer919.minestomtest.permissions.Permission;
-import dev.proplayer919.minestomtest.permissions.PermissionRegistry;
-import dev.proplayer919.minestomtest.permissions.PlayerPermissionRegistry;
-import dev.proplayer919.minestomtest.generators.InstanceCreator;
+import dev.proplayer919.construkt.commands.GameModeCommand;
+import dev.proplayer919.construkt.commands.HubCommand;
+import dev.proplayer919.construkt.commands.PermissionCommand;
+import dev.proplayer919.construkt.sidebar.SidebarData;
+import dev.proplayer919.construkt.instance.HubInstanceData;
+import dev.proplayer919.construkt.instance.HubInstanceRegistry;
+import dev.proplayer919.construkt.permissions.Permission;
+import dev.proplayer919.construkt.permissions.PermissionRegistry;
+import dev.proplayer919.construkt.generators.InstanceCreator;
+import dev.proplayer919.construkt.sidebar.SidebarRegistry;
 import io.github.togar2.pvp.MinestomPvP;
 import io.github.togar2.pvp.feature.CombatFeatureSet;
 import io.github.togar2.pvp.feature.CombatFeatures;
 import net.bridgesplash.sidebar.SidebarAPI;
-import net.bridgesplash.sidebar.sidebar.CustomSidebar;
-import net.bridgesplash.sidebar.state.State;
-import net.kyori.adventure.text.Component;
 import net.mangolise.anticheat.MangoAC;
 import net.mangolise.anticheat.events.PlayerFlagEvent;
 import net.minestom.server.Auth;
@@ -24,17 +25,14 @@ import net.minestom.server.event.player.*;
 import net.minestom.server.instance.*;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.coordinate.Pos;
-import dev.proplayer919.minestomtest.commands.ServerCommand;
-import dev.proplayer919.minestomtest.commands.GiveCommand;
-import dev.proplayer919.minestomtest.helpers.MessagingHelper;
-import dev.proplayer919.minestomtest.storage.SqliteDatabase;
+import dev.proplayer919.construkt.commands.GiveCommand;
+import dev.proplayer919.construkt.helpers.MessagingHelper;
+import dev.proplayer919.construkt.storage.SqliteDatabase;
 import net.minestom.server.command.ConsoleSender;
 import org.jetbrains.annotations.NotNull;
 import org.everbuild.blocksandstuff.blocks.BlockBehaviorRuleRegistrations;
 import org.everbuild.blocksandstuff.blocks.BlockPlacementRuleRegistrations;
 
-import java.util.Map;
-import java.util.Hashtable;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -58,6 +56,7 @@ public class Main {
         Permission giveCommandPermission = new Permission("command.give");
         Permission gamemodeCommandPermission = new Permission("command.gamemode");
         Permission permissionCommandPermission = new Permission("command.permission");
+        Permission hostCommandPermission = new Permission("command.host");
 
         // Register permissions
         PermissionRegistry.registerPermission(buildPermission);
@@ -65,9 +64,10 @@ public class Main {
         PermissionRegistry.registerPermission(giveCommandPermission);
         PermissionRegistry.registerPermission(gamemodeCommandPermission);
         PermissionRegistry.registerPermission(permissionCommandPermission);
+        PermissionRegistry.registerPermission(hostCommandPermission);
 
-        // Initialize SQLite database for persistent player permissions
-        SqliteDatabase sqliteDb = new SqliteDatabase(Path.of("data", "permissions.db"));
+        // Initialize SQLite database for persistent data
+        SqliteDatabase sqliteDb = new SqliteDatabase(Path.of("data", "construkt-data.db"));
         try {
             sqliteDb.connect();
         } catch (Throwable t) {
@@ -79,45 +79,33 @@ public class Main {
             sqliteDb.close();
         }, "Sqlite-Shutdown-Close"));
 
-        // Create instances
-        InstanceContainer hubInstance = InstanceCreator.createSimpleInstanceContainer(Block.GRASS_BLOCK, Block.GOLD_BLOCK, false);
-
-        // Map of server IDs to instances
-        Map<String, Instance> instanceMap = new Hashtable<>();
-        instanceMap.put("hub", hubInstance);
+        // Create hub instances
+        int hubs = 2; // Number of hub instances to create
+        for (int i = 0; i < hubs; i++) {
+            InstanceContainer hubInstance = InstanceCreator.createSimpleInstanceContainer(Block.GRASS_BLOCK, Block.GOLD_BLOCK, false);
+            HubInstanceData hubData = new HubInstanceData(hubInstance, "hub-" + (i + 1));
+            HubInstanceRegistry.registerInstance(hubData);
+        }
 
         // Init commands
-        ServerCommand serverCommand = new ServerCommand(instanceMap);
         GiveCommand giveCommand = new GiveCommand();
         GameModeCommand gameModeCommand = new GameModeCommand();
         PermissionCommand permissionCommand = new PermissionCommand();
+        HubCommand hubCommand = new HubCommand();
 
         MinecraftServer.getCommandManager().register(giveCommand);
         MinecraftServer.getCommandManager().register(gameModeCommand);
-        MinecraftServer.getCommandManager().register(serverCommand);
         MinecraftServer.getCommandManager().register(permissionCommand);
-
-        // Create a sidebar
-        CustomSidebar sidebar = new CustomSidebar(Component.text("Player Sidebar"));
-
-        // Create some reactive state
-        State<Boolean> isSneaking = new State<>(false);
-        State<Integer> sneaks = new State<>(0);
-
-        // Register states with keys
-        sidebar.addState("is_sneaking", isSneaking);
-        sidebar.addState("sneaks", sneaks);
-
-        // Define lines using MiniMessage tags
-        sidebar.setLine("status_line", "<ifstate:is_sneaking:true:'<green>Sneaking</green>':'<red>Standing</red>'/>");
-        sidebar.setLine("count_line", "Sneak count: <state:sneaks/>");
+        MinecraftServer.getCommandManager().register(hubCommand);
 
         // Player spawning
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
             final Player player = event.getPlayer();
 
-            // Set player instance and position
+            // Pick a hub instance with the least players
+            HubInstanceData hubInstanceData = HubInstanceRegistry.getInstanceWithLowestPlayers();
+            Instance hubInstance = hubInstanceData.getInstance();
             event.setSpawningInstance(hubInstance);
             player.setRespawnPoint(new Pos(0.5, 40, 0.5));
             player.setGameMode(GameMode.SURVIVAL);
@@ -126,8 +114,20 @@ public class Main {
         globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             final Player player = event.getPlayer();
 
+            // Find the instance the player is in
+            Instance playerInstance = player.getInstance();
+            String playerInstanceId = "unknown";
+            if (HubInstanceRegistry.getInstanceByInstance(playerInstance) != null) {
+                playerInstanceId = HubInstanceRegistry.getInstanceByInstance(playerInstance).getId();
+            }
+
             // Setup sidebar for the player
-            SidebarAPI.getSidebarManager().addSidebar(player, sidebar);
+            SidebarData sidebarData = new SidebarData(player.getUuid());
+            sidebarData.setInstanceId(playerInstanceId);
+
+            SidebarRegistry.registerSidebar(sidebarData);
+
+            SidebarAPI.getSidebarManager().addSidebar(player, sidebarData.getSidebar());
         });
 
         globalEventHandler.addListener(PlayerBlockBreakEvent.class, event -> {
@@ -138,13 +138,9 @@ public class Main {
                 return;
             }
 
-            if (instanceMap.containsValue(playerInstance)) {
-                if (playerInstance == hubInstance) {
-                    if (!PlayerPermissionRegistry.hasPermission(player, breakPermission)) {
-                        MessagingHelper.sendProtectMessage(player, "You cannot break blocks here");
-                        event.setCancelled(true);
-                    }
-                }
+            if (HubInstanceRegistry.getInstanceWithPlayer(player.getUuid()) != null) {
+                MessagingHelper.sendProtectMessage(player, "You cannot break blocks in a hub");
+                event.setCancelled(true);
             }
         });
 
@@ -156,23 +152,10 @@ public class Main {
                 return;
             }
 
-            if (instanceMap.containsValue(playerInstance)) {
-                if (playerInstance == hubInstance) {
-                    if (!PlayerPermissionRegistry.hasPermission(player, buildPermission)) {
-                        MessagingHelper.sendProtectMessage(player, "You cannot place blocks here");
-                        event.setCancelled(true);
-                    }
-                }
+            if (HubInstanceRegistry.getInstanceWithPlayer(player.getUuid()) != null) {
+                MessagingHelper.sendProtectMessage(player, "You cannot place blocks in a hub");
+                event.setCancelled(true);
             }
-        });
-
-        globalEventHandler.addListener(PlayerStartSneakingEvent.class, event -> {
-            isSneaking.set(true);
-        });
-
-        globalEventHandler.addListener(PlayerStopSneakingEvent.class, event -> {
-            isSneaking.set(false);
-            sneaks.setPrev(prev -> prev + 1);
         });
 
         globalEventHandler.addListener(PlayerFlagEvent.class, event -> {

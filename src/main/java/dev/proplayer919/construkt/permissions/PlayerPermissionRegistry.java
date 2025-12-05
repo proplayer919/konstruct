@@ -1,6 +1,6 @@
-package dev.proplayer919.minestomtest.permissions;
+package dev.proplayer919.construkt.permissions;
 
-import dev.proplayer919.minestomtest.storage.SqliteDatabase;
+import dev.proplayer919.construkt.storage.SqliteDatabase;
 import net.minestom.server.entity.Player;
 
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package dev.proplayer919.minestomtest.generators;
+package dev.proplayer919.construkt.generators;
 
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;

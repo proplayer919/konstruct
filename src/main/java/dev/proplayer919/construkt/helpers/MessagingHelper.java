@@ -1,4 +1,4 @@
-package dev.proplayer919.minestomtest.helpers;
+package dev.proplayer919.construkt.helpers;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;

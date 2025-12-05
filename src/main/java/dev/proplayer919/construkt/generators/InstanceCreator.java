@@ -1,6 +1,6 @@
-package dev.proplayer919.minestomtest.generators;
+package dev.proplayer919.construkt.generators;
 
-import dev.proplayer919.minestomtest.Main;
+import dev.proplayer919.construkt.Main;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.ChunkRange;
 import net.minestom.server.instance.Chunk;
@@ -36,7 +36,7 @@ public class InstanceCreator {
 
         // Add PvP feature if enabled
         if (pvpEnabled) {
-            // instanceContainer.eventNode().addChild(Main.modernVanilla.createNode());
+            instanceContainer.eventNode().addChild(Main.modernVanilla.createNode());
         }
 
         return instanceContainer;

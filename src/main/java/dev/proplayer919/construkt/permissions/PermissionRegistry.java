@@ -1,4 +1,4 @@
-package dev.proplayer919.minestomtest.permissions;
+package dev.proplayer919.construkt.permissions;
 
 import java.util.Hashtable;
 import java.util.Map;

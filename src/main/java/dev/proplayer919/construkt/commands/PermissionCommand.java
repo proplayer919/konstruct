@@ -1,17 +1,14 @@
-package dev.proplayer919.minestomtest.commands;
+package dev.proplayer919.construkt.commands;
 
-import dev.proplayer919.minestomtest.helpers.MessagingHelper;
-import dev.proplayer919.minestomtest.permissions.Permission;
-import dev.proplayer919.minestomtest.permissions.PermissionRegistry;
-import dev.proplayer919.minestomtest.permissions.PlayerPermissionRegistry;
+import dev.proplayer919.construkt.helpers.MessagingHelper;
+import dev.proplayer919.construkt.permissions.Permission;
+import dev.proplayer919.construkt.permissions.PermissionRegistry;
+import dev.proplayer919.construkt.permissions.PlayerPermissionRegistry;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.entity.Player;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @SuppressWarnings("PatternValidation")

@@ -1,4 +1,4 @@
-package dev.proplayer919.minestomtest.helpers;
+package dev.proplayer919.construkt.helpers;
 
 public class Emojis {
     public static final String STAR = "⭐";
