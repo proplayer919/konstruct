@@ -1,8 +1,8 @@
 package dev.proplayer919.construkt.instance;
 
 import dev.proplayer919.construkt.instance.gameplayer.GamePlayerData;
+import dev.proplayer919.construkt.instance.match.MatchType;
 import lombok.Getter;
-import net.minestom.server.instance.Instance;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -11,23 +11,22 @@ import java.util.UUID;
 @Getter
 public class GameInstanceData extends InstanceData {
     private final UUID hostUUID;
-    private final int maxPlayers;
-    private final int minPlayers = 2;
+    private final MatchType matchType;
 
     private final Collection<GamePlayerData> players = new HashSet<>();
 
-    public GameInstanceData(String id, Instance instance, UUID hostUUID, int maxPlayers) {
-        super(InstanceType.GAME, instance, id);
+    public GameInstanceData(String id, UUID hostUUID, MatchType matchType) {
+        super(InstanceType.GAME, matchType.getInstance(), id);
         this.hostUUID = hostUUID;
-        this.maxPlayers = maxPlayers;
+        this.matchType = matchType;
     }
 
     public boolean isFull() {
-        return players.size() >= maxPlayers;
+        return players.size() >= matchType.getMaxPlayers();
     }
 
     public boolean hasEnoughPlayers() {
-        return players.size() >= minPlayers;
+        return players.size() >= matchType.getMinPlayers();
     }
 
     public Collection<GamePlayerData> getAlivePlayers() {

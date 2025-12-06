@@ -1,10 +1,10 @@
 package dev.proplayer919.construkt;
 
-import dev.proplayer919.construkt.commands.admin.GameModeCommand;
+import dev.proplayer919.construkt.commands.HostCommand;
+import dev.proplayer919.construkt.commands.admin.*;
 import dev.proplayer919.construkt.commands.HubCommand;
-import dev.proplayer919.construkt.commands.admin.KickHubCommand;
-import dev.proplayer919.construkt.commands.admin.PermissionCommand;
-import dev.proplayer919.construkt.messages.BanMessage;
+import dev.proplayer919.construkt.instance.match.DeathmatchMatchType;
+import dev.proplayer919.construkt.instance.match.MatchTypeRegistry;
 import dev.proplayer919.construkt.messages.Namespace;
 import dev.proplayer919.construkt.permissions.PlayerPermissionRegistry;
 import dev.proplayer919.construkt.sidebar.SidebarData;
@@ -16,7 +16,6 @@ import io.github.togar2.pvp.MinestomPvP;
 import io.github.togar2.pvp.feature.CombatFeatureSet;
 import io.github.togar2.pvp.feature.CombatFeatures;
 import net.bridgesplash.sidebar.SidebarAPI;
-import net.kyori.adventure.text.Component;
 import net.mangolise.anticheat.MangoAC;
 import net.mangolise.anticheat.events.PlayerFlagEvent;
 import net.minestom.server.Auth;
@@ -28,7 +27,6 @@ import net.minestom.server.event.player.*;
 import net.minestom.server.instance.*;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.coordinate.Pos;
-import dev.proplayer919.construkt.commands.admin.GiveCommand;
 import dev.proplayer919.construkt.messages.MessagingHelper;
 import dev.proplayer919.construkt.storage.SqliteDatabase;
 import net.minestom.server.command.ConsoleSender;
@@ -40,7 +38,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 public class Main {
     public final static CombatFeatureSet modernVanilla = CombatFeatures.modernVanilla();
@@ -79,9 +76,10 @@ public class Main {
         PermissionCommand permissionCommand = new PermissionCommand();
         HubCommand hubCommand = new HubCommand();
         KickHubCommand kickHubCommand = new KickHubCommand();
-        dev.proplayer919.construkt.commands.admin.KickCommand kickCommand = new dev.proplayer919.construkt.commands.admin.KickCommand();
-        dev.proplayer919.construkt.commands.admin.BanCommand banCommand = new dev.proplayer919.construkt.commands.admin.BanCommand();
-        dev.proplayer919.construkt.commands.admin.UnbanCommand unbanCommand = new dev.proplayer919.construkt.commands.admin.UnbanCommand();
+        KickCommand kickCommand = new KickCommand();
+        BanCommand banCommand = new BanCommand();
+        UnbanCommand unbanCommand = new UnbanCommand();
+        HostCommand hostCommand = new HostCommand();
 
         MinecraftServer.getCommandManager().register(giveCommand);
         MinecraftServer.getCommandManager().register(gameModeCommand);
@@ -91,6 +89,10 @@ public class Main {
         MinecraftServer.getCommandManager().register(kickCommand);
         MinecraftServer.getCommandManager().register(banCommand);
         MinecraftServer.getCommandManager().register(unbanCommand);
+        MinecraftServer.getCommandManager().register(hostCommand);
+
+        // Register game types
+        MatchTypeRegistry.registerMatchType(new DeathmatchMatchType());
 
         // Player spawning
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
