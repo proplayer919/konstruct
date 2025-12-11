@@ -189,7 +189,7 @@ public class GameInstanceData extends InstanceData {
 
             // Check if it's a chest
             Block block = event.getBlock();
-            if (block.name().equals("minecraft:chest") || block.name().equals("minecraft:ender_chest")) {
+            if (block.name().equals("minecraft:chest") || block.name().equals("minecraft:waxed_copper_chest") || block.name().equals("minecraft:ender_chest")) {
                 // Attempt to find the inventory in the loot registry
                 ChestIdentifier chestId = new ChestIdentifier(block, event.getBlockPosition().asPos());
                 Inventory chestInventory = chestLootRegistry.getLoot(chestId);
