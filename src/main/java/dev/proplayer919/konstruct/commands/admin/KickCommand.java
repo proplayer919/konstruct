@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
 
 public class KickCommand extends Command {
@@ -17,7 +18,11 @@ public class KickCommand extends Command {
 
         setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Usage: /kick <player> [message]"));
 
-        var playerArg = ArgumentType.String("player");
+        var playerArg = ArgumentType.String("player").setSuggestionCallback((sender, context, suggestion) -> {
+            MinecraftServer.getConnectionManager().getOnlinePlayers().forEach(player -> {
+                suggestion.addEntry(new SuggestionEntry(player.getUsername()));
+            });
+        });
         var messageArg = ArgumentType.StringArray("message").setDefaultValue(new String[0]);
 
         addSyntax((sender, context) -> {

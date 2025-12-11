@@ -9,6 +9,7 @@ import dev.proplayer919.konstruct.permissions.PlayerPermissionRegistry;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeModifier;
@@ -22,7 +23,30 @@ public class WinCommand extends Command {
         super("win", "wingame", "winmatch");
 
         // Executed if no other executor can be used
-        setDefaultExecutor((sender, context) -> {
+        setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Usage: /win [target]"));
+
+        var targetArg = ArgumentType.String("target").setDefaultValue((sender) -> {
+            if (sender instanceof Player player) {
+                return player.getUsername();
+            }
+            return null;
+        }).setSuggestionCallback((sender, context, suggestion) -> {
+            if (sender instanceof Player player) {
+                GameInstanceData gameInstanceData = GameInstanceRegistry.getInstanceWithPlayer(player.getUuid());
+                if (gameInstanceData != null) {
+                    for (GamePlayerData gp : gameInstanceData.getAlivePlayers()) {
+                        Player targetPlayer = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(gp.getUuid());
+                        if (targetPlayer != null) {
+                            suggestion.addEntry(new SuggestionEntry(targetPlayer.getUsername()));
+                        }
+                    }
+                }
+            }
+        });
+
+        addSyntax((sender, context) -> {
+            final String target = context.get(targetArg);
+
             if (sender instanceof Player player) {
                 if (!PlayerPermissionRegistry.hasPermission(player, "command.win")) {
                     MessagingHelper.sendMessage(sender, MessageType.PERMISSION, "You do not have permission to use this command.");
@@ -35,14 +59,20 @@ public class WinCommand extends Command {
                     return;
                 }
 
+                Player targetPlayer = MinecraftServer.getConnectionManager().findOnlinePlayer(target);
+                if (targetPlayer == null) {
+                    MessagingHelper.sendMessage(sender, MessageType.ERROR, "Player with username '" + target + "' is not online.");
+                    return;
+                }
+
                 GamePlayerData gamePlayerData = gameInstanceData.getAlivePlayers().stream()
-                        .filter(gp -> gp.getUuid().equals(player.getUuid()))
+                        .filter(gp -> gp.getUuid().equals(targetPlayer.getUuid()))
                         .findFirst()
                         .orElse(null);
 
                 // Kill all other players and declare this player the winner
                 for (GamePlayerData gp : gameInstanceData.getAlivePlayers()) {
-                    if (!gp.getUuid().equals(player.getUuid())) {
+                    if (!gp.getUuid().equals(targetPlayer.getUuid())) {
                         gameInstanceData.killPlayer(gp);
                     }
                 }
@@ -50,11 +80,11 @@ public class WinCommand extends Command {
                 if (gamePlayerData != null) {
                     gameInstanceData.winMatch(gamePlayerData);
                 } else {
-                    MessagingHelper.sendMessage(sender, MessageType.ERROR, "You are not an active player in this game.");
+                    MessagingHelper.sendMessage(sender, MessageType.ERROR, "Player '" + target + "' is not in your game or is already dead.");
                 }
             } else {
                 MessagingHelper.sendMessage(sender, MessageType.ERROR, "Only players can use this command.");
             }
-        });
+        }, targetArg);
     }
 }

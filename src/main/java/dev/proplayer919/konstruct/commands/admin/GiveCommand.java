@@ -3,8 +3,10 @@ package dev.proplayer919.konstruct.commands.admin;
 import dev.proplayer919.konstruct.messages.MessagingHelper;
 import dev.proplayer919.konstruct.messages.MessageType;
 import dev.proplayer919.konstruct.permissions.PlayerPermissionRegistry;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -17,12 +19,18 @@ public class GiveCommand extends Command {
         super("give", "giveme", "getitem", "get", "i", "item", "giveitem");
 
         // Executed if no other executor can be used
-        setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Usage: /give <item> [amount]"));
+        setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Usage: /give <target> <item> [amount]"));
 
+        var targetArg = ArgumentType.String("target").setSuggestionCallback((sender, context, suggestion) -> {
+            MinecraftServer.getConnectionManager().getOnlinePlayers().forEach(player -> {
+                suggestion.addEntry(new SuggestionEntry(player.getUsername()));
+            });
+        });
         var itemIdArg = ArgumentType.String("item-id");
         var amountArg = ArgumentType.Integer("amount").setDefaultValue(1);
 
         addSyntax((sender, context) -> {
+            final String targetName = context.get(targetArg);
             final String itemId = context.get(itemIdArg);
             final int amount = context.get(amountArg);
             if (sender instanceof Player player) {
@@ -33,8 +41,13 @@ public class GiveCommand extends Command {
 
                 try {
                     ItemStack itemStack = ItemStack.of(Objects.requireNonNull(Material.fromKey(itemId)), amount);
-                    player.getInventory().addItemStack(itemStack);
-                    MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Gave you " + amount + " of item " + itemId);
+                    Player target = MinecraftServer.getConnectionManager().getOnlinePlayerByUsername(targetName);
+                    if (target == null) {
+                        MessagingHelper.sendMessage(sender, MessageType.ERROR, "Player '" + targetName + "' not found.");
+                        return;
+                    }
+                    target.getInventory().addItemStack(itemStack);
+                    MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Gave " + targetName + " " + amount + " of item " + itemId);
                 } catch (Exception e) {
                     MessagingHelper.sendMessage(sender, MessageType.ERROR, "Invalid item ID: " + itemId);
                 }

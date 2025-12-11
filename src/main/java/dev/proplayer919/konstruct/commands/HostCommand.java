@@ -14,6 +14,7 @@ import net.kyori.adventure.audience.Audience;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
 
 import java.time.Duration;
@@ -28,7 +29,11 @@ public class HostCommand extends Command {
         // Executed if no other executor can be used
         setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.SERVER, "Usage: /host <id>"));
 
-        var idArg = ArgumentType.String("id");
+        var idArg = ArgumentType.String("id").setSuggestionCallback((sender, context, suggestion) -> {
+            for (MatchType matchType : MatchTypeRegistry.getAllMatchTypes().values()) {
+                suggestion.addEntry(new SuggestionEntry(matchType.getId()));
+            }
+        });
 
         addSyntax((sender, context) -> {
             final String id = context.get(idArg);

@@ -188,6 +188,11 @@ public class Main {
                 t.printStackTrace();
             }
 
+            // Make it so players with permission "*" get permission level 4
+            if (PlayerPermissionRegistry.hasPermission(player, "*")) {
+                player.setPermissionLevel(4);
+            }
+
             // Find the instance the player is in
             Instance playerInstance = player.getInstance();
             String playerInstanceId = "unknown";

@@ -10,6 +10,7 @@ import dev.proplayer919.konstruct.instance.GameInstanceRegistry;
 import dev.proplayer919.konstruct.util.PlayerHubHelper;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 
@@ -21,7 +22,11 @@ public class HubCommand extends Command {
         // Executed if no other executor can be used
         setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.SERVER, "Usage: /hub hub-<id>"));
 
-        var idArg = ArgumentType.String("id");
+        var idArg = ArgumentType.String("id").setSuggestionCallback((sender, context, suggestion) -> {
+            for (HubInstanceData hubInstance : HubInstanceRegistry.getAllInstances().values()) {
+                suggestion.addEntry(new SuggestionEntry(hubInstance.getId()));
+            }
+        });
 
         addSyntax((sender, context) -> {
             final String id = context.get(idArg);

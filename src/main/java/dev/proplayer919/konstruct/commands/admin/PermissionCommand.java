@@ -6,6 +6,7 @@ import dev.proplayer919.konstruct.permissions.PlayerPermissionRegistry;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
 
 import java.util.UUID;
@@ -18,7 +19,11 @@ public class PermissionCommand extends Command {
         // Executed if no other executor can be used
         setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Usage: /permission <username/UUID> <permission> <true/false>"));
 
-        var usernameArg = ArgumentType.String("username");
+        var usernameArg = ArgumentType.String("username").setSuggestionCallback((sender, context, suggestion) -> {
+            MinecraftServer.getConnectionManager().getOnlinePlayers().forEach(player -> {
+                suggestion.addEntry(new SuggestionEntry(player.getUsername()));
+            });
+        });
         var permissionArg = ArgumentType.String("permission");
         var valueArg = ArgumentType.Boolean("value");
 

@@ -9,6 +9,7 @@ import dev.proplayer919.konstruct.permissions.PlayerPermissionRegistry;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeModifier;
@@ -24,7 +25,19 @@ public class KillCommand extends Command {
         // Executed if no other executor can be used
         setDefaultExecutor((sender, context) -> MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Usage: /kill <username>"));
 
-        var usernameArg = ArgumentType.String("username");
+        var usernameArg = ArgumentType.String("username").setSuggestionCallback((sender, context, suggestion) -> {
+            if (sender instanceof Player player) {
+                GameInstanceData gameInstanceData = GameInstanceRegistry.getInstanceWithPlayer(player.getUuid());
+                if (gameInstanceData != null) {
+                    for (GamePlayerData gp : gameInstanceData.getAlivePlayers()) {
+                        Player targetPlayer = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(gp.getUuid());
+                        if (targetPlayer != null) {
+                            suggestion.addEntry(new SuggestionEntry(targetPlayer.getUsername()));
+                        }
+                    }
+                }
+            }
+        });
 
         addSyntax((sender, context) -> {
             final String username = context.get(usernameArg);
