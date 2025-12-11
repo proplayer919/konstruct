@@ -12,14 +12,18 @@ public class MatchType {
     private final int minPlayers;
     private final Pos spectatorSpawn;
     private final Pos waitingSpawn;
+    private final Pos buildingBounds1;
+    private final Pos buildingBounds2;
 
-    public MatchType(String id, String name, int maxPlayers, int minPlayers, Pos spectatorSpawn, Pos waitingSpawn) {
+    public MatchType(String id, String name, int maxPlayers, int minPlayers, Pos spectatorSpawn, Pos waitingSpawn, Pos buildingBounds1, Pos buildingBounds2) {
         this.id = id;
         this.name = name;
         this.maxPlayers = maxPlayers;
         this.minPlayers = minPlayers;
         this.spectatorSpawn = spectatorSpawn;
         this.waitingSpawn = waitingSpawn;
+        this.buildingBounds1 = buildingBounds1;
+        this.buildingBounds2 = buildingBounds2;
     }
 
     public static Pos getPointOnCircle(Pos center, double radius, int numerator, int denominator) {

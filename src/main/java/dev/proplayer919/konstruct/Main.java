@@ -53,7 +53,14 @@ public class Main {
 
     static void main(String[] args) {
         // Initialization
-        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Online());
+        boolean online = false;
+
+        MinecraftServer minecraftServer = null;
+        if (online) {
+            minecraftServer = MinecraftServer.init(new Auth.Online());
+        } else {
+            minecraftServer = MinecraftServer.init();
+        }
 
         MinestomPvP.init();
 

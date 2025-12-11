@@ -10,7 +10,10 @@ public class DeathmatchMatchType extends MatchType {
         int minPlayers = 2;
         int maxPlayers = 2;
 
-        super("deathmatch", "Deathmatch", maxPlayers, minPlayers, new Pos(0.5, 60, 0.5), new Pos(0.5, 80, 0.5));
+        Pos bounds1 = new Pos(-150, 35, -150);
+        Pos bounds2 = new Pos(150, 50, 150);
+
+        super("deathmatch", "Deathmatch", maxPlayers, minPlayers, new Pos(0.5, 60, 0.5), new Pos(0.5, 80, 0.5), bounds1, bounds2);
     }
 
     public Instance getInstance() {
