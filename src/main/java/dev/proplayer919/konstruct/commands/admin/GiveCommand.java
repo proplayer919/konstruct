@@ -54,6 +54,6 @@ public class GiveCommand extends Command {
             } else {
                 MessagingHelper.sendMessage(sender, MessageType.ERROR, "Only players can use this command.");
             }
-        }, itemIdArg, amountArg);
+        }, targetArg, itemIdArg, amountArg);
     }
 }

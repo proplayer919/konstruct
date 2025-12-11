@@ -33,7 +33,7 @@ public class MatchType {
         // Spread players out in a circle around the center spawn point
         Pos centerSpawn = new Pos(0.5, 40, 0.5);
 
-        Pos point = getPointOnCircle(centerSpawn, 20.0, playerIndex, playerAmount);
+        Pos point = getPointOnCircle(centerSpawn, 30, playerIndex, playerAmount);
 
         // Compute yaw and pitch so the player looks at the center
         double dx = centerSpawn.x() - point.x();
