@@ -151,11 +151,18 @@ public class LootGenerator {
         t.add(Material.WATER_BUCKET, 2);
         t.add(Material.LAVA_BUCKET, 1);
 
+        // Bows
+        t.add(Material.BOW, 2);
+        t.add(Material.CROSSBOW, 2);
+
+        // Shields
+        t.add(Material.SHIELD, 3);
+
         // Stackables / consumables
         t.add(Material.COBBLESTONE, 8, 4, 16);
         t.add(Material.GOLDEN_CARROT, 6, 1, 4);
         t.add(Material.COOKED_BEEF, 7, 1, 4);
-        t.add(Material.SHIELD, 3, 1, 1);
+        t.add(Material.ARROW, 5, 2, 6);
 
         return t;
     }
@@ -186,10 +193,15 @@ public class LootGenerator {
         t.add(Material.DIAMOND_LEGGINGS, 4);
         t.add(Material.DIAMOND_BOOTS, 4);
 
+        // Bows
+        t.add(Material.BOW, 2);
+        t.add(Material.CROSSBOW, 2);
+
         // Consumables
         t.add(Material.GOLDEN_CARROT, 6, 5, 14);
         t.add(Material.GOLDEN_APPLE, 4, 1, 4);
         t.add(Material.ENCHANTED_GOLDEN_APPLE, 1, 1, 1);
+        t.add(Material.TIPPED_ARROW, 5, 8, 20);
 
         return t;
     }
