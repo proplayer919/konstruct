@@ -8,6 +8,7 @@ import dev.proplayer919.konstruct.instance.gameplayer.GamePlayerStatus;
 import dev.proplayer919.konstruct.messages.MatchMessages;
 import dev.proplayer919.konstruct.sidebar.SidebarData;
 import dev.proplayer919.konstruct.sidebar.SidebarRegistry;
+import dev.proplayer919.konstruct.util.PlayerHubHelper;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
@@ -29,6 +30,7 @@ public class MatchManager {
         player.setRespawnPoint(gameInstanceData.getMatchType().getSpectatorSpawn());
         player.setGameMode(GameMode.ADVENTURE);
         player.teleport(gameInstanceData.getMatchType().getWaitingSpawn());
+        PlayerHubHelper.resetPlayerAttributes(player);
 
         // Update sidebar
         SidebarData sidebarData = SidebarRegistry.getSidebarByPlayerId(player.getUuid());

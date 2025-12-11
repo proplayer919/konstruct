@@ -38,7 +38,14 @@ public class PlayerHubHelper {
         player.setInstance(hubInstanceData.getInstance());
         player.teleport(new Pos(0.5, 40, 0.5)); // Teleport to hub spawn point
         player.setGameMode(GameMode.SURVIVAL);
+        resetPlayerAttributes(player);
+    }
+
+    public static void resetPlayerAttributes(Player player) {
         player.setHealth(20);
+        player.setAdditionalHearts(0);
+        player.setFoodSaturation(7);
+        player.setFood(20);
         player.getInventory().clear();
         player.clearEffects();
     }
