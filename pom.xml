@@ -57,12 +57,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.TogAr2</groupId>
-            <artifactId>MinestomFluids</artifactId>
-            <version>af2a7c9</version>
-        </dependency>
-
-        <dependency>
             <groupId>net.mangolise</groupId>
             <artifactId>mango-anti-cheat</artifactId>
             <version>latest</version>
