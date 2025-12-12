@@ -24,6 +24,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
@@ -200,6 +201,15 @@ public class GameInstanceData extends InstanceData {
         this.getInstance().eventNode().addListener(PlayerBlockPlaceEvent.class, event -> {
             if (matchStatus != MatchStatus.IN_PROGRESS) {
                 event.setCancelled(true);
+            }
+
+            // Figure out what block the player is looking at (before the block place)
+            Point targetedPosition = event.getPlayer().getTargetBlockPosition(20);
+            if (targetedPosition != null) {
+                Block block = this.getInstance().getBlock(targetedPosition);
+                if (block.name().equals("minecraft:chest") || block.name().equals("minecraft:waxed_copper_chest") || block.name().equals("minecraft:ender_chest")) {
+                    event.setCancelled(true);
+                }
             }
 
             // Check if it is within the arena type's bounds
