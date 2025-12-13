@@ -32,6 +32,8 @@ import net.minestom.server.coordinate.Pos;
 import dev.proplayer919.konstruct.messages.MessagingHelper;
 import dev.proplayer919.konstruct.storage.SqliteDatabase;
 import net.minestom.server.command.ConsoleSender;
+import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.ping.Status;
 import net.minestom.server.utils.identity.NamedAndIdentified;
 import org.jetbrains.annotations.NotNull;
@@ -241,6 +243,26 @@ public class Main {
             if (HubRegistry.getInstanceWithPlayer(player.getUuid()) != null) {
                 MessagingHelper.sendMessage(player, MessageType.PROTECT, "You cannot break blocks in a hub");
                 event.setCancelled(true);
+            }
+        });
+
+        globalEventHandler.addListener(PlayerPickBlockEvent.class, event -> {
+            Block block = event.getBlock();
+            Player player = event.getPlayer();
+            if (player.getInventory().getItemStack((int) player.getHeldSlot()).material().block().compare(block)) {
+                return;
+            }
+
+            // Find any ItemStack in the player's inventory that matches the picked block
+            for (int slot = 0; slot < player.getInventory().getSize(); slot++) {
+                var itemStack = player.getInventory().getItemStack(slot);
+                if (itemStack.material().block().compare(block)) {
+                    // Swap the item stack to the player's hand
+                    ItemStack currentItem = player.getInventory().getItemStack((int) player.getHeldSlot());
+                    player.getInventory().setItemStack((int) player.getHeldSlot(), itemStack);
+                    player.getInventory().setItemStack(slot, currentItem);
+                    return;
+                }
             }
         });
 

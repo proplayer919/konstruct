@@ -23,16 +23,16 @@ import net.kyori.adventure.title.TitlePart;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.Entity;
-import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.GameMode;
-import net.minestom.server.entity.Player;
+import net.minestom.server.entity.*;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
+import net.minestom.server.event.item.ItemDropEvent;
+import net.minestom.server.event.item.PickupItemEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.inventory.Inventory;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -198,6 +198,25 @@ public class MatchManager {
             if (!inBounds) {
                 event.setCancelled(true);
                 MessagingHelper.sendMessage(event.getPlayer(), MessageType.PROTECT, "You cannot modify the arena outside of the bounds!");
+            }
+        });
+
+        matchData.getMatchInstance().eventNode().addListener(ItemDropEvent.class, event -> {
+            ItemEntity itemEntity = new ItemEntity(event.getItemStack());
+            itemEntity.setPickupDelay(300, ChronoUnit.MILLIS);
+            itemEntity.setVelocity(event.getPlayer().getPosition().direction().mul(0.5));
+            itemEntity.setInstance(event.getPlayer().getInstance(), event.getPlayer().getPosition().add(0, 0.5, 0));
+        });
+
+        matchData.getMatchInstance().eventNode().addListener(PickupItemEvent.class, event -> {
+            if (event.getEntity() instanceof CustomPlayer player) {
+                // Prevent picking up items if the player is not alive
+                if (!player.isAlive()) {
+                    event.setCancelled(true);
+                    return;
+                }
+
+                player.getInventory().addItemStack(event.getItemStack());
             }
         });
     }
