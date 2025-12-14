@@ -34,6 +34,7 @@ import dev.proplayer919.konstruct.storage.SqliteDatabase;
 import net.minestom.server.command.ConsoleSender;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.ping.Status;
 import net.minestom.server.utils.identity.NamedAndIdentified;
 import org.jetbrains.annotations.NotNull;
@@ -49,7 +50,7 @@ import java.nio.file.Path;
 public class Main {
     public final static CombatFeatureSet modernVanilla = CombatFeatures.modernVanilla();
 
-    static void main(String[] args) {
+    static void main() {
         // Initialization
         MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Online());
 
@@ -259,19 +260,50 @@ public class Main {
         globalEventHandler.addListener(PlayerPickBlockEvent.class, event -> {
             Block block = event.getBlock();
             Player player = event.getPlayer();
-            if (player.getInventory().getItemStack((int) player.getHeldSlot()).material().block().compare(block)) {
+            Block heldBlock = player.getInventory().getItemStack(player.getHeldSlot()).material().block();
+            if (heldBlock != null && heldBlock.compare(block)) {
                 return;
             }
 
             // Find any ItemStack in the player's inventory that matches the picked block
+            boolean foundInInventory = false;
             for (int slot = 0; slot < player.getInventory().getSize(); slot++) {
-                var itemStack = player.getInventory().getItemStack(slot);
-                if (itemStack.material().block().compare(block)) {
+                ItemStack itemStack = player.getInventory().getItemStack(slot);
+                Block itemBlock = itemStack.material().block();
+                if (itemBlock != null && itemBlock.compare(block)) {
                     // Swap the item stack to the player's hand
-                    ItemStack currentItem = player.getInventory().getItemStack((int) player.getHeldSlot());
-                    player.getInventory().setItemStack((int) player.getHeldSlot(), itemStack);
+                    foundInInventory = true;
+
+                    ItemStack currentItem = player.getInventory().getItemStack(player.getHeldSlot());
+                    player.getInventory().setItemStack(player.getHeldSlot(), itemStack);
                     player.getInventory().setItemStack(slot, currentItem);
-                    return;
+                    break;
+                }
+            }
+
+            if (!foundInInventory && player.getGameMode().equals(GameMode.CREATIVE)) {
+                // Give the player the picked block in their hand
+                Material material = block.registry().material();
+                if (material != null) {
+                    ItemStack stack = ItemStack.of(material);
+
+                    int emptySlot = -1;
+                    for (int slot = 0; slot < player.getInventory().getSize(); slot++) {
+                        ItemStack itemStack = player.getInventory().getItemStack(slot);
+                        if (itemStack.isAir()) {
+                            emptySlot = slot;
+                            break;
+                        }
+                    }
+
+                    if (emptySlot != -1) {
+                        ItemStack currentItem = player.getInventory().getItemStack(player.getHeldSlot());
+                        player.getInventory().setItemStack(emptySlot, currentItem);
+                        player.getInventory().setItemStack(player.getHeldSlot(), stack);
+                    } else {
+                        // No empty slot, just replace the hand item
+                        player.getInventory().setItemStack(player.getHeldSlot(), stack);
+                    }
                 }
             }
         });
