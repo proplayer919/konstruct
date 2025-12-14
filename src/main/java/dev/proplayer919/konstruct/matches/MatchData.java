@@ -39,7 +39,7 @@ public class MatchData {
     private final Pos spectatorSpawn = new Pos(0.5, 60, 0.5);
 
     private final int minPlayers = 2;
-    private final int maxPlayers = 16;
+    private final int maxPlayers = 2;
 
     private final Pos buildingBounds1 = new Pos(-150, 35, -150);
     private final Pos buildingBounds2 = new Pos(150, 60, 150);

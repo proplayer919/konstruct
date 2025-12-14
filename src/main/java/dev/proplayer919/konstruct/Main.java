@@ -73,6 +73,16 @@ public class Main {
         int hubs = 5; // Number of hub instances to create
         for (int i = 0; i < hubs; i++) {
             InstanceContainer hubInstance = InstanceLoader.loadAnvilInstance("data/lobby", false);
+
+            hubInstance.eventNode().addListener(PlayerMoveEvent.class, event -> {
+                Player player = event.getPlayer();
+
+                if (player.getPosition().y() < 0) {
+                    player.teleport(new Pos(0.5, 40, 0.5));
+                    MessagingHelper.sendMessage(player, MessageType.SERVER, "You fell into the abyss, teleporting you back to spawn.");
+                }
+            });
+
             HubData hubData = new HubData(hubInstance, "hub-" + (i + 1));
             HubRegistry.registerInstance(hubData);
         }

@@ -10,6 +10,7 @@ import dev.proplayer919.konstruct.messages.MessagingHelper;
 import dev.proplayer919.konstruct.sidebar.SidebarData;
 import dev.proplayer919.konstruct.sidebar.SidebarRegistry;
 import dev.proplayer919.konstruct.util.BoundsHelper;
+import dev.proplayer919.konstruct.util.ItemDropper;
 import dev.proplayer919.konstruct.util.PlayerHubHelper;
 import dev.proplayer919.konstruct.util.PlayerSpawnHelper;
 import io.github.togar2.pvp.events.EntityPreDeathEvent;
@@ -31,12 +32,23 @@ import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.inventory.Inventory;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MatchManager {
+    private static final Map<Block, Material> blockDrops = Map.of(
+            Block.GRASS_BLOCK, Material.DIRT,
+            Block.DIRT, Material.DIRT,
+            Block.STONE, Material.COBBLESTONE,
+            Block.OAK_LOG, Material.OAK_LOG,
+            Block.OAK_PLANKS, Material.OAK_PLANKS,
+            Block.COBBLESTONE, Material.COBBLESTONE
+    );
+
     public static void setupMatch(MatchData matchData) {
         // Setup schedules
         matchData.getScheduler().scheduleAtFixedRate(() -> {
@@ -96,10 +108,10 @@ public class MatchManager {
                         if (killer instanceof CustomPlayer killerPlayer) {
                             killPlayer(matchData, player);
 
+                            MessagingHelper.sendMessage(matchData.getPlayers(), MatchMessages.createPlayerEliminatedMessage(player.getUsername(), killerPlayer.getUsername(), matchData.getAlivePlayerCount() - 1));
+
                             if (matchData.getAlivePlayerCount() == 1) {
                                 winMatch(matchData, matchData.getAlivePlayers().iterator().next());
-                            } else {
-                                MessagingHelper.sendMessage(matchData.getPlayers(), MatchMessages.createPlayerEliminatedMessage(player.getUsername(), killerPlayer.getUsername(), matchData.getAlivePlayerCount() - 1));
                             }
 
                             Component killerMessage = MatchMessages.createKillerMessage(player.getUsername());
@@ -120,18 +132,19 @@ public class MatchManager {
             }
 
             // If the player is below Y=0 and are alive while the match is in progress, kill them
-            if (matchData.getStatus() == MatchStatus.IN_PROGRESS) {
-                CustomPlayer player = (CustomPlayer) event.getPlayer();
-                if (player.isAlive()) {
-                    if (player.getPosition().y() < 0) {
-                        killPlayer(matchData, player);
+            CustomPlayer player = (CustomPlayer) event.getPlayer();
+            if (player.getPosition().y() < 0) {
+                if (matchData.getStatus() == MatchStatus.IN_PROGRESS && player.isAlive()) {
+                    killPlayer(matchData, player);
 
-                        MessagingHelper.sendMessage(matchData.getPlayers(), MatchMessages.createPlayerVoidMessage(player.getUsername(), matchData.getAlivePlayerCount() - 1));
+                    MessagingHelper.sendMessage(matchData.getPlayers(), MatchMessages.createPlayerVoidMessage(player.getUsername(), matchData.getAlivePlayerCount() - 1));
 
-                        if (matchData.getAlivePlayerCount() == 1) {
-                            winMatch(matchData, matchData.getAlivePlayers().iterator().next());
-                        }
+                    if (matchData.getAlivePlayerCount() == 1) {
+                        winMatch(matchData, matchData.getAlivePlayers().iterator().next());
                     }
+                } else {
+                    // Teleport the player back to the spectator spawn
+                    player.teleport(matchData.getLobbySpawn());
                 }
             }
         });
@@ -190,6 +203,7 @@ public class MatchManager {
         matchData.getMatchInstance().eventNode().addListener(PlayerBlockBreakEvent.class, event -> {
             if (matchData.getStatus() != MatchStatus.IN_PROGRESS) {
                 event.setCancelled(true);
+                return;
             }
 
             // Check if it is within the arena type's bounds
@@ -198,14 +212,19 @@ public class MatchManager {
             if (!inBounds) {
                 event.setCancelled(true);
                 MessagingHelper.sendMessage(event.getPlayer(), MessageType.PROTECT, "You cannot modify the arena outside of the bounds!");
+                return;
+            }
+
+            Block block = event.getBlock();
+            if (!blockDrops.containsKey(block)) {
+                // Drop the block as an item
+                ItemStack droppedItem = ItemStack.of(blockDrops.get(block));
+                ItemDropper.dropItem(droppedItem, matchData.getMatchInstance(), event.getBlockPosition().asPos());
             }
         });
 
         matchData.getMatchInstance().eventNode().addListener(ItemDropEvent.class, event -> {
-            ItemEntity itemEntity = new ItemEntity(event.getItemStack());
-            itemEntity.setPickupDelay(300, ChronoUnit.MILLIS);
-            itemEntity.setVelocity(event.getPlayer().getPosition().direction().mul(0.5));
-            itemEntity.setInstance(event.getPlayer().getInstance(), event.getPlayer().getPosition().add(0, 0.5, 0));
+            ItemDropper.dropItemFromPlayer(event.getItemStack(), (CustomPlayer) event.getPlayer(), false);
         });
 
         matchData.getMatchInstance().eventNode().addListener(PickupItemEvent.class, event -> {
@@ -309,11 +328,20 @@ public class MatchManager {
 
     public static void killPlayer(MatchData matchData, CustomPlayer player) {
         if (player.isAlive()) {
+            // Drop items from the player's inventory
+            for (ItemStack itemStack : player.getInventory().getItemStacks()) {
+                if (itemStack.material() != Material.AIR) {
+                    ItemDropper.dropItemFromPlayer(itemStack, player, true);
+                }
+            }
+
+            // Death effects
             Pos deathPos = player.getPosition();
 
             Entity lightning = new Entity(EntityType.LIGHTNING_BOLT);
             lightning.setInstance(matchData.getMatchInstance(), deathPos);
 
+            // Make the player a spectator
             player.setVelocity(Vec.ZERO);
 
             player.setPlayerStatus(PlayerStatus.SPECTATOR);
