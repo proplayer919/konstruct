@@ -123,6 +123,13 @@ public class Main {
         UnbanCommand unbanCommand = new UnbanCommand();
         MinecraftServer.getCommandManager().register(unbanCommand);
 
+        // Builder commands
+        EditorCommand editorCommand = new EditorCommand();
+        MinecraftServer.getCommandManager().register(editorCommand);
+
+        SaveEditsCommand saveEditsCommand = new SaveEditsCommand();
+        MinecraftServer.getCommandManager().register(saveEditsCommand);
+
         // Admin abuse commands
         WinCommand winCommand = new WinCommand();
         MinecraftServer.getCommandManager().register(winCommand);
