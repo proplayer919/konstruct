@@ -18,8 +18,8 @@ public class HostCommand extends Command {
         // Executed if no other executor can be used
         setDefaultExecutor((sender, context) -> {
             if (sender instanceof CustomPlayer player) {
-                Instance lobbyInstance = InstanceLoader.loadAnvilInstance("data/lobby", false);
-                Instance matchInstance = InstanceLoader.loadAnvilInstance("data/arenas/deathmatch1", true);
+                Instance lobbyInstance = InstanceLoader.loadAnvilInstance("data/maps/lobby", false);
+                Instance matchInstance = InstanceLoader.loadAnvilInstance("data/maps/arenas/deathmatch1", true);
                 MatchData matchData = new MatchData(player, lobbyInstance, matchInstance);
                 MatchesRegistry.registerMatch(matchData);
                 MatchManager.setupMatch(matchData);

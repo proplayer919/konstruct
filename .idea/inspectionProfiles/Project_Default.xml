@@ -9,15 +9,18 @@
       <option name="ignoredModules">
         <list>
           <option value="MinestomTest" />
+          <option value="Konstruct" />
         </list>
       </option>
       <option name="ignoredPackages">
         <list>
           <option value="ch.qos.logback:logback-core:1.5.13" />
+          <option value="ch.qos.logback:logback-core:1.5.13" />
         </list>
       </option>
       <option name="ignoredReasons">
         <list>
+          <option value="Not exploitable" />
           <option value="Not exploitable" />
         </list>
       </option>

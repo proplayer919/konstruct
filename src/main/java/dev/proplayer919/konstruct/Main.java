@@ -73,7 +73,7 @@ public class Main {
         // Create hub instances
         int hubs = 5; // Number of hub instances to create
         for (int i = 0; i < hubs; i++) {
-            InstanceContainer hubInstance = InstanceLoader.loadAnvilInstance("data/lobby", false);
+            InstanceContainer hubInstance = InstanceLoader.loadAnvilInstance("data/maps/lobby", false);
 
             hubInstance.eventNode().addListener(PlayerMoveEvent.class, event -> {
                 Player player = event.getPlayer();

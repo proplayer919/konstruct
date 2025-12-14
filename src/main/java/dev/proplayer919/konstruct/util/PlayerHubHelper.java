@@ -5,8 +5,10 @@ import dev.proplayer919.konstruct.hubs.HubData;
 import dev.proplayer919.konstruct.hubs.HubRegistry;
 import dev.proplayer919.konstruct.sidebar.SidebarData;
 import dev.proplayer919.konstruct.sidebar.SidebarRegistry;
+import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.attribute.Attribute;
 
 public class PlayerHubHelper {
     public static void returnPlayerToHub(CustomPlayer player) {
@@ -40,12 +42,28 @@ public class PlayerHubHelper {
     }
 
     public static void resetPlayerAttributes(CustomPlayer player) {
-        player.setHealth(20);
+        Attribute.values().forEach(attribute -> {
+            player.getAttribute(attribute).modifiers().forEach(modifier -> {
+                player.getAttribute(attribute).modifiers().remove(modifier);
+            });
+        });
+
+        player.setHealth((float) player.getAttribute(Attribute.MAX_HEALTH).getValue());
         player.setAdditionalHearts(0);
-        player.setFoodSaturation(7);
+
         player.setFood(20);
-        player.getInventory().clear();
+        player.setFoodSaturation(7);
+
+        player.setFireTicks(0);
+        player.setGlowing(false);
+        player.setAllowFlying(false);
+
+        player.setLevel(0);
+        player.setExp(0);
         player.clearEffects();
+
+        player.getInventory().clear();
         player.resetTitle();
+        player.tagHandler().updateContent(CompoundBinaryTag.empty());
     }
 }
