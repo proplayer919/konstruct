@@ -9,7 +9,7 @@ public class EditorSessionRegistry {
     private static final Map<UUID, EditorSession> sessions = new HashMap<>();
 
     public static void addSession(EditorSession session) {
-        sessions.put(session.player().getUuid(), session);
+        sessions.put(session.getHost().getUuid(), session);
     }
 
     public static void removeSession(UUID playerUuid) {
