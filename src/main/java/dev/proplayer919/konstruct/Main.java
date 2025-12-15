@@ -176,7 +176,7 @@ public class Main {
                     .description(
                             Component.text("§l §e                   -§k=§e-§6 §lKonstruct§e -§k=§e-§r")
                                     .appendNewline()
-                                    .append(Component.text("                 §dv0.0 §aBETA §7-§b Whitelist Only!")))
+                                    .append(Component.text("                  §dv0.0 §aBETA §7-§b Now testing!")))
                     .favicon(favicon)
                     .playerInfo(Status.PlayerInfo.builder()
                             .onlinePlayers(onlinePlayers)

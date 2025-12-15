@@ -136,12 +136,13 @@ public class MatchManager {
                 return;
             }
 
-            // If the player is frozen, prevent movement but not yaw/pitch
+            // If the player is frozen, prevent movement
             CustomPlayer player = (CustomPlayer) event.getPlayer();
             if (player.isFrozen()) {
-                event.setCancelled(true);
-                Pos newPosition = event.getNewPosition().withCoord(player.getPosition());
-                player.teleport(newPosition);
+                // If the event didn't change position, don't cancel
+                if (!event.getNewPosition().sameView(event.getPlayer().getPosition())) {
+                    event.setCancelled(true);
+                }
                 return;
             }
 
