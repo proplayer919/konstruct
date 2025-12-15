@@ -126,6 +126,12 @@ public class Main {
         UnbanCommand unbanCommand = new UnbanCommand();
         MinecraftServer.getCommandManager().register(unbanCommand);
 
+        FreezeCommand freezeCommand = new FreezeCommand();
+        MinecraftServer.getCommandManager().register(freezeCommand);
+
+        UnfreezeCommand unfreezeCommand = new UnfreezeCommand();
+        MinecraftServer.getCommandManager().register(unfreezeCommand);
+
         // Builder commands
         EditorCommand editorCommand = new EditorCommand();
         MinecraftServer.getCommandManager().register(editorCommand);

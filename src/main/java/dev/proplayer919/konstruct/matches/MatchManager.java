@@ -133,10 +133,19 @@ public class MatchManager {
             // If the match is in countdown, prevent movement
             if (matchData.getStatus() == MatchStatus.COUNTDOWN) {
                 event.setCancelled(true);
+                return;
+            }
+
+            // If the player is frozen, prevent movement but not yaw/pitch
+            CustomPlayer player = (CustomPlayer) event.getPlayer();
+            if (player.isFrozen()) {
+                event.setCancelled(true);
+                Pos newPosition = event.getNewPosition().withCoord(player.getPosition());
+                player.teleport(newPosition);
+                return;
             }
 
             // If the player is below Y=0 and are alive while the match is in progress, kill them
-            CustomPlayer player = (CustomPlayer) event.getPlayer();
             if (player.getPosition().y() < 0) {
                 if (matchData.getStatus() == MatchStatus.IN_PROGRESS && player.isAlive()) {
                     killPlayer(matchData, player);

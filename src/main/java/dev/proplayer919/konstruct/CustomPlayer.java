@@ -12,6 +12,9 @@ public class CustomPlayer extends Player {
     @Setter
     private PlayerStatus playerStatus;
 
+    @Setter
+    private boolean frozen;
+
     public CustomPlayer(PlayerConnection playerConnection, GameProfile gameProfile) {
         super(playerConnection, gameProfile);
     }
