@@ -44,7 +44,7 @@ public class GiveCommand extends Command {
                         return;
                     }
                     target.getInventory().addItemStack(itemStack);
-                    MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Gave " + targetName + " " + amount + " of item " + itemId);
+                    MessagingHelper.sendMessage(sender, MessageType.ADMIN, "Gave " + targetName + " " + amount + "x of item " + itemId);
                 } catch (Exception e) {
                     MessagingHelper.sendMessage(sender, MessageType.ERROR, "Invalid item ID: " + itemId);
                 }

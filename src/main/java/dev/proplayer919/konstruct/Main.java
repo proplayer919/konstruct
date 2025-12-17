@@ -41,9 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import org.everbuild.blocksandstuff.blocks.BlockBehaviorRuleRegistrations;
 import org.everbuild.blocksandstuff.blocks.BlockPlacementRuleRegistrations;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -52,7 +50,7 @@ public class Main {
 
     static void main() {
         // Initialization
-        MinecraftServer minecraftServer = MinecraftServer.init();
+        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Online());
 
         MinestomPvP.init();
 
@@ -162,12 +160,12 @@ public class Main {
         globalEventHandler.addListener(ServerListPingEvent.class, event -> {
             byte[] favicon = null;
             try {
-                Path faviconPath = Path.of("data", "icon.png");
-                if (Files.exists(faviconPath)) {
-                    favicon = Files.readAllBytes(faviconPath);
+                Path iconPath = Path.of("icon.png");
+                if (Files.exists(iconPath)) {
+                    favicon = Files.readAllBytes(iconPath);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
             int onlinePlayers = MinecraftServer.getConnectionManager().getOnlinePlayerCount();

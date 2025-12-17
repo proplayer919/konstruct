@@ -35,8 +35,7 @@ public class PlayerHubHelper {
         }
 
         hubData.getPlayers().add(player);
-        player.setInstance(hubData.getInstance());
-        player.teleport(new Pos(0.5, 40, 0.5)); // Teleport to hub spawn point
+        player.setInstance(hubData.getInstance(), new Pos(0.5, 40, 0.5));
         player.setGameMode(GameMode.SURVIVAL);
         resetPlayerAttributes(player);
     }
@@ -52,7 +51,7 @@ public class PlayerHubHelper {
         player.setAdditionalHearts(0);
 
         player.setFood(20);
-        player.setFoodSaturation(7);
+        player.setFoodSaturation(0);
 
         player.setFireTicks(0);
         player.setGlowing(false);

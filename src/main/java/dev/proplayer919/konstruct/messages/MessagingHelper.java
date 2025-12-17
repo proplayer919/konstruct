@@ -1,5 +1,6 @@
 package dev.proplayer919.konstruct.messages;
 
+import dev.proplayer919.konstruct.Constants;
 import dev.proplayer919.konstruct.CustomPlayer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.sound.Sound;
@@ -50,6 +51,6 @@ public final class MessagingHelper {
     public static Component createMessage(MessageType messageType, String message) {
         return messageType.labelComponent()
                 .append(Component.text(" | ").color(NamedTextColor.GRAY))
-                .append(Component.text(message).color(NamedTextColor.GRAY));
+                .append(Component.text(message).color(Constants.BRAND_COLOUR_PRIMARY_1));
     }
 }
