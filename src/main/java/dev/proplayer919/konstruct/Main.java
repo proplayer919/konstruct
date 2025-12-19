@@ -134,16 +134,6 @@ public class Main {
         UnfreezeCommand unfreezeCommand = new UnfreezeCommand();
         MinecraftServer.getCommandManager().register(unfreezeCommand);
 
-        // Builder commands
-        EditorCommand editorCommand = new EditorCommand();
-        MinecraftServer.getCommandManager().register(editorCommand);
-
-        SaveEditsCommand saveEditsCommand = new SaveEditsCommand();
-        MinecraftServer.getCommandManager().register(saveEditsCommand);
-
-        JoinEditorSessionCommand joinEditorSessionCommand = new JoinEditorSessionCommand();
-        MinecraftServer.getCommandManager().register(joinEditorSessionCommand);
-
         // Admin abuse commands
         WinCommand winCommand = new WinCommand();
         MinecraftServer.getCommandManager().register(winCommand);
