@@ -6,6 +6,8 @@ import dev.proplayer919.konstruct.bot.UsernameGenerator;
 import dev.proplayer919.konstruct.hubs.HubData;
 import dev.proplayer919.konstruct.hubs.HubRegistry;
 import dev.proplayer919.konstruct.loot.ChestIdentifier;
+import dev.proplayer919.konstruct.matches.events.MatchEndEvent;
+import dev.proplayer919.konstruct.matches.events.MatchStartEvent;
 import dev.proplayer919.konstruct.matches.modifiers.ThunderModifier;
 import dev.proplayer919.konstruct.messages.MatchMessages;
 import dev.proplayer919.konstruct.messages.MessageType;
@@ -28,6 +30,7 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
+import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.item.PickupItemEvent;
@@ -326,13 +329,6 @@ public class MatchManager {
             MessagingHelper.sendSound(matchData.getPlayers(), Sound.sound(Key.key("minecraft:block.note_block.pling"), Sound.Source.AMBIENT, 1.0f, 1.0f));
 
             matchData.setStatus(MatchStatus.IN_PROGRESS);
-
-            // Start all bots
-            for (MatchPlayer player : matchData.getPlayers()) {
-                if (player instanceof BotPlayer bot) {
-                    bot.runBot();
-                }
-            }
         }, "game-start-countdown-" + matchData.getMatchUUID()).start();
     }
 
@@ -365,6 +361,10 @@ public class MatchManager {
             }
 
             if (matchData.hasEnoughPlayers()) {
+                // Call the match start event
+                MatchStartEvent startEvent = new MatchStartEvent(matchData);
+                EventDispatcher.call(startEvent);
+
                 // Show bots to all players
                 showBotsToPlayers(matchData);
 
@@ -439,6 +439,10 @@ public class MatchManager {
     }
 
     public static void matchOver(MatchData matchData) {
+        // Call the match end event
+        MatchEndEvent endEvent = new MatchEndEvent(matchData);
+        EventDispatcher.call(endEvent);
+
         for (MatchPlayer matchPlayer : matchData.getPlayers()) {
             if (matchPlayer instanceof CustomPlayer player) {
                 PlayerHubHelper.returnPlayerToHub(player);

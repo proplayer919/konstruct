@@ -1,10 +1,7 @@
 package dev.proplayer919.konstruct;
 
-import dev.proplayer919.konstruct.commands.HostCommand;
-import dev.proplayer919.konstruct.commands.JoinMatchCommand;
-import dev.proplayer919.konstruct.commands.LeaveMatchCommand;
+import dev.proplayer919.konstruct.commands.*;
 import dev.proplayer919.konstruct.commands.admin.*;
-import dev.proplayer919.konstruct.commands.HubCommand;
 import dev.proplayer919.konstruct.instance.InstanceLoader;
 import dev.proplayer919.konstruct.messages.MessageType;
 import dev.proplayer919.konstruct.messages.PunishmentMessages;
@@ -20,6 +17,7 @@ import net.bridgesplash.sidebar.SidebarAPI;
 import net.kyori.adventure.text.Component;
 import net.mangolise.anticheat.MangoAC;
 import net.mangolise.anticheat.events.PlayerFlagEvent;
+import net.minestom.server.Auth;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
@@ -48,7 +46,7 @@ public class Main {
 
     static void main(String[] args) {
         // Initialization
-        MinecraftServer minecraftServer = MinecraftServer.init();
+        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Online());
 
         MinestomPvP.init();
 
@@ -90,6 +88,9 @@ public class Main {
 
         HostCommand hostCommand = new HostCommand();
         MinecraftServer.getCommandManager().register(hostCommand);
+
+        QuickStartCommand quickStartCommand = new QuickStartCommand();
+        MinecraftServer.getCommandManager().register(quickStartCommand);
 
         JoinMatchCommand joinMatchCommand = new JoinMatchCommand();
         MinecraftServer.getCommandManager().register(joinMatchCommand);

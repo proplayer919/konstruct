@@ -3,21 +3,28 @@ package dev.proplayer919.konstruct.bot;
 import dev.proplayer919.konstruct.matches.MatchData;
 import dev.proplayer919.konstruct.matches.MatchPlayer;
 import dev.proplayer919.konstruct.matches.PlayerStatus;
+import dev.proplayer919.konstruct.matches.events.MatchEndEvent;
+import dev.proplayer919.konstruct.matches.events.MatchStartEvent;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.TitlePart;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.metadata.LivingEntityMeta;
+import net.minestom.server.event.Event;
+import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.EntityDeathEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.network.packet.server.play.PlayerInfoRemovePacket;
 import net.minestom.server.network.packet.server.play.PlayerInfoUpdatePacket;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -42,6 +49,10 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
 
     private final Random random = new Random();
 
+    private final EventNode<@NotNull Event> botEventNode;
+
+    private Thread botThread;
+
     public BotPlayer(UUID uuid, String username, PlayerSkin skin, int order, MatchData matchData) {
         super(EntityType.PLAYER, uuid);
 
@@ -54,6 +65,7 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
         this.skin = skin;
         this.playerStatus = PlayerStatus.ALIVE;
         this.matchData = matchData;
+        this.botEventNode = EventNode.all("bot-event-node-" + uuid);
 
         this.playerViewBotPacket = new PlayerInfoUpdatePacket(
                 PlayerInfoUpdatePacket.Action.ADD_PLAYER,
@@ -88,11 +100,29 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
                 updatePose();
             }
         });
+
+        botEventNode.addListener(MatchStartEvent.class, event -> {
+            if (event.getMatchData() == matchData) {
+                runBot();
+            }
+        });
+
+        botEventNode.addListener(MatchEndEvent.class, event -> {
+            if (event.getMatchData() == matchData) {
+                if (botThread != null && botThread.isAlive()) {
+                    botThread.interrupt();
+                    MinecraftServer.getGlobalEventHandler().removeChild(botEventNode);
+                    remove();
+                }
+            }
+        });
+
+        MinecraftServer.getGlobalEventHandler().addChild(botEventNode);
     }
 
-    public void runBot() {
+    private void runBot() {
         // Create a thread to run the bot logic
-        new Thread(() -> {
+        botThread = new Thread(() -> {
             while (true) {
                 try {
                     MatchPlayer nearestPlayer = findNearestPlayer();
@@ -100,22 +130,26 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
                         Pos playerPos = nearestPlayer.getPosition();
 
                         // Find the direction that would face the player
-                        Pos newPosition = position.add(0, getEyeHeight(), 0).withLookAt(playerPos.withY(playerPos.y() + nearestPlayer.getEyeHeight()));
-                        moveTo(newPosition);
-
-                        // Move towards the player
+                        Pos playerFacing = position.add(0, getEyeHeight(), 0).withLookAt(playerPos.withY(playerPos.y() + nearestPlayer.getEyeHeight()));
                         float speed = (float) getAttribute(Attribute.MOVEMENT_SPEED).getValue();
 
-                        float deltaX = (float) (newPosition.x() + (newPosition.yaw() * speed));
-                        float deltaZ = (float) (newPosition.z() + (newPosition.yaw() * speed));
-                        Pos finalPosition = newPosition.withX(deltaX).withZ(deltaZ);
-                        moveTo(finalPosition);
+                        float yaw = playerFacing.yaw();
+                        float pitch = playerFacing.pitch();
+
+                        // Move towards the player
+                        float radYaw = (float) Math.toRadians(yaw);
+                        float radPitch = (float) Math.toRadians(pitch);
+                        float xzSpeed = speed * (float) Math.cos(radPitch);
+                        float velX = xzSpeed * (float) -Math.sin(radYaw);
+                        float velY = speed * (float) -Math.sin(radPitch);
+                        float velZ = xzSpeed * (float) Math.cos(radYaw);
+                        setVelocity(new Vec(velX, velY, velZ));
                     } else {
                         // No players found, look around randomly
                         float randomYaw = random.nextFloat() * 360;
                         float randomPitch = (random.nextFloat() * 60) - 30; // Pitch between -30 and +30 degrees
                         Pos randomLookPosition = position.add(0, getEyeHeight(), 0).withView(randomYaw, randomPitch);
-                        moveTo(randomLookPosition);
+                        teleport(randomLookPosition);
                     }
 
                     Thread.sleep(1000); // Bot logic runs every second
@@ -123,7 +157,8 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
                     e.printStackTrace();
                 }
             }
-        }, "bot-run-thread-" + uuid).start();
+        }, "bot-run-thread-" + uuid);
+        botThread.start();
     }
 
     private void moveTo(Pos position) {
@@ -145,6 +180,10 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
         float minDistance = Float.MAX_VALUE;
         MatchPlayer nearestPlayer = null;
         for (MatchPlayer player : matchData.getPlayers()) {
+            if (player.getUuid().equals(this.uuid)) {
+                continue;
+            }
+
             float distance = (float) getPosition().distance(player.getPosition());
             if (distance < minDistance) {
                 minDistance = distance;
