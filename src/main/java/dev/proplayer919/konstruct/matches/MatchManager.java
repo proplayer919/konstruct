@@ -366,6 +366,10 @@ public class MatchManager {
 
                 // Start the match countdown
                 startMatchCountdown(matchData);
+
+                // Send the MOTD message to all players
+                Component motdMessage = MatchMessages.createMOTDMessage(matchData.getHostUsername(), "Meadows", matchData.getPlayerCount(), matchData.getMaxPlayers(), matchData.getActiveModifiers());
+                MessagingHelper.sendMessage(matchData.getPlayers(), motdMessage);
             } else {
                 // Not enough players, cancel the match
                 tooLittlePlayers(matchData);
