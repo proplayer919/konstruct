@@ -131,19 +131,18 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
 
                         // Find the direction that would face the player
                         Pos playerFacing = position.add(0, getEyeHeight(), 0).withLookAt(playerPos.withY(playerPos.y() + nearestPlayer.getEyeHeight()));
-                        float speed = (float) getAttribute(Attribute.MOVEMENT_SPEED).getValue();
+                        float speed = (float) getAttribute(Attribute.MOVEMENT_SPEED).getValue() * 100; // Scale speed for velocity
 
                         float yaw = playerFacing.yaw();
-                        float pitch = playerFacing.pitch();
 
                         // Move towards the player
                         float radYaw = (float) Math.toRadians(yaw);
-                        float radPitch = (float) Math.toRadians(pitch);
-                        float xzSpeed = speed * (float) Math.cos(radPitch);
-                        float velX = xzSpeed * (float) -Math.sin(radYaw);
-                        float velY = speed * (float) -Math.sin(radPitch);
-                        float velZ = xzSpeed * (float) Math.cos(radYaw);
-                        setVelocity(new Vec(velX, velY, velZ));
+                        float velX = speed * (float) -Math.sin(radYaw);
+                        float velZ = speed * (float) Math.cos(radYaw);
+                        setVelocity(new Vec(velX, 0, velZ));
+
+                        // Look at the player
+                        setView(playerFacing.yaw(), playerFacing.pitch());
                     } else {
                         // No players found, look around randomly
                         float randomYaw = random.nextFloat() * 360;
@@ -159,21 +158,6 @@ public class BotPlayer extends LivingEntity implements MatchPlayer {
             }
         }, "bot-run-thread-" + uuid);
         botThread.start();
-    }
-
-    private void moveTo(Pos position) {
-        Pos currentPosition = getPosition();
-        if (currentPosition.equals(position)) {
-            return;
-        }
-
-        refreshPosition(currentPosition);
-
-        if (currentPosition.sameView(position)) {
-            return;
-        }
-
-        setView(position.yaw(), position.pitch());
     }
 
     private MatchPlayer findNearestPlayer() {

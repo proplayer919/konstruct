@@ -322,6 +322,10 @@ public class MatchManager {
             MessagingHelper.sendSound(matchData.getPlayers(), Sound.sound(Key.key("minecraft:block.note_block.pling"), Sound.Source.AMBIENT, 1.0f, 1.0f));
 
             matchData.setStatus(MatchStatus.IN_PROGRESS);
+
+            // Call the match start event
+            MatchStartEvent startEvent = new MatchStartEvent(matchData);
+            EventDispatcher.call(startEvent);
         }, "game-start-countdown-" + matchData.getMatchUUID()).start();
     }
 
@@ -354,10 +358,6 @@ public class MatchManager {
             }
 
             if (matchData.hasEnoughPlayers()) {
-                // Call the match start event
-                MatchStartEvent startEvent = new MatchStartEvent(matchData);
-                EventDispatcher.call(startEvent);
-
                 // Show bots to all players
                 showBotsToPlayers(matchData);
 

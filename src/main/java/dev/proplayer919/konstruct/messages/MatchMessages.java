@@ -8,6 +8,9 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import java.util.Collection;
 import java.util.Date;
@@ -15,7 +18,28 @@ import java.util.Iterator;
 import java.util.UUID;
 
 public final class MatchMessages {
-    private MatchMessages() {}
+    public static MiniMessage mm = MiniMessage.builder().editTags(builder -> {
+        builder.resolvers(
+                TagResolver.resolver("p1", Tag.styling(Constants.BRAND_COLOUR_PRIMARY_1)),
+                TagResolver.resolver("p2", Tag.styling(Constants.BRAND_COLOUR_PRIMARY_2)),
+                TagResolver.resolver("p3", Tag.styling(Constants.BRAND_COLOUR_PRIMARY_3)),
+                TagResolver.resolver("a1", Tag.styling(Constants.BRAND_COLOUR_ALT_1)),
+                TagResolver.resolver("a2", Tag.styling(Constants.BRAND_COLOUR_ALT_2)),
+                TagResolver.resolver("nobold", Tag.styling(TextDecoration.BOLD.withState(false))),
+                TagResolver.resolver("noitalic", Tag.styling(TextDecoration.ITALIC.withState(false)))
+        );
+    }).build();
+
+    public static Component separator = Component.text("=================================", NamedTextColor.WHITE, TextDecoration.STRIKETHROUGH);
+
+    public static Component surroundWithSeparators(Component message) {
+        return separator.append(Component.newline())
+                .append(Component.newline())
+                .append(message.decoration(TextDecoration.STRIKETHROUGH, false))
+                .append(Component.newline())
+                .append(Component.newline())
+                .append(separator);
+    }
 
     public static Component createMatchAdvertiseMessage(UUID matchUUID, String hostName, Date startTime) {
         String formattedStartTime = DateStringUtility.formatDuration(startTime.getTime() - System.currentTimeMillis(), true);
@@ -121,7 +145,8 @@ public final class MatchMessages {
             modifiersComponent = comp;
         }
 
-        return Component.text("PLAYING DEATHMATCH\n", Constants.BRAND_COLOUR_ALT_1).decorate(TextDecoration.BOLD)
+        Component motd = Component.text("PLAYING DEATHMATCH\n", Constants.BRAND_COLOUR_ALT_1).decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.BOLD, false)
                 .append(Component.text("Map: ", Constants.BRAND_COLOUR_PRIMARY_2))
                 .append(Component.text(mapName + "\n", Constants.BRAND_COLOUR_ALT_1))
                 .append(Component.text("Hosted by: ", Constants.BRAND_COLOUR_PRIMARY_2))
@@ -130,6 +155,9 @@ public final class MatchMessages {
                 .append(Component.text(playerCount + "/" + maxPlayers + "\n", Constants.BRAND_COLOUR_ALT_2))
                 .append(Component.text("Modifiers: ", Constants.BRAND_COLOUR_PRIMARY_2))
                 .append(modifiersComponent)
-                .append(Component.text("\nʀᴜɴ ʙʏ ᴋᴏɴѕᴛʀᴜᴄᴛ", Constants.BRAND_COLOUR_PRIMARY_2));
+                .append(Component.newline())
+                .append(Component.text("\nѕᴜʀᴠɪᴠᴇ. ᴇʟɪᴍɪɴᴀᴛᴇ. ᴡɪɴ.", Constants.BRAND_COLOUR_PRIMARY_2));
+
+        return surroundWithSeparators(motd);
     }
 }
